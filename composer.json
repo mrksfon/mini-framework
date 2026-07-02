@@ -1,0 +1,43 @@
+{
+    "name": "mrksfon/mini-framework",
+    "description": "A tiny PHP framework built from scratch to learn Laravel internals.",
+    "license": "MIT",
+    "type": "project",
+    "require": {
+        "php": "^8.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Framework\\": "core/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "laravel/pint": "^1.29",
+        "pestphp/pest": "^4.7",
+        "phpstan/phpstan": "^2.2",
+        "rector/rector": "^2.5"
+    },
+    "scripts": {
+        "test": "pest",
+        "lint": "pint --test",
+        "analyse": "phpstan analyse --memory-limit=1G",
+        "refactor": "rector process --dry-run",
+        "check": [
+            "@test",
+            "@analyse",
+            "@lint"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
+    }
+}
