@@ -1,0 +1,46 @@
+name: Feature request
+description: Propose a new framework feature
+title: "[Feature]: "
+labels:
+  - "type:feature"
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should this feature accomplish?
+      placeholder: Describe the desired behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this feature useful?
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What should be implemented?
+    validations:
+      required: true
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of Scope
+      description: What should explicitly not be implemented?
+
+  - type: checkboxes
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: Tests are added or updated
+          required: true
+        - label: Documentation is updated when necessary
+          required: true
