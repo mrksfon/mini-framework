@@ -57,3 +57,53 @@ it('reject a dynamic route when a static segment does not match', function () {
 
     $router->dispatch('GET', '/posts/43');
 })->throws(RouteNotFoundException::class);
+
+it('registers a GET route using the get method', function () {
+    $router = new Router;
+
+    $router->get('/test', fn () => 'test');
+
+    $result = $router->dispatch('GET', '/test');
+
+    expect($result)->toBe('test');
+});
+
+it('registers a POST route using the post method', function () {
+    $router = new Router;
+
+    $router->post('/test', fn () => 'test');
+
+    $result = $router->dispatch('POST', '/test');
+
+    expect($result)->toBe('test');
+});
+
+it('registers a PUT route using the put method', function () {
+    $router = new Router;
+
+    $router->put('/test', fn () => 'test');
+
+    $result = $router->dispatch('PUT', '/test');
+
+    expect($result)->toBe('test');
+});
+
+it('registers a PATCH route using the patch method', function () {
+    $router = new Router;
+
+    $router->patch('/test', fn () => 'test');
+
+    $result = $router->dispatch('PATCH', '/test');
+
+    expect($result)->toBe('test');
+});
+
+it('registers a DELETE route using the delete method', function () {
+    $router = new Router;
+
+    $router->delete('/test', fn () => 'test');
+
+    $result = $router->dispatch('DELETE', '/test');
+
+    expect($result)->toBe('test');
+});
