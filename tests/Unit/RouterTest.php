@@ -33,3 +33,27 @@ it('distinguishes routes by HTTP method', function () {
     expect($getResult)->toBe('users');
     expect($postResult)->toBe('posts');
 });
+
+it('matches a dynamic route parameter and passes it to the handler', function () {
+    $router = new Router;
+
+    $router->add('GET', '/users/{id}', fn (string $id): string => $id);
+
+    expect($router->dispatch('GET', '/users/42'))->toBe('42');
+});
+
+it('matches multiple dynamic route parameters and passed them to the handler', function () {
+    $router = new Router;
+
+    $router->add('GET', '/users/{id}/posts/{postId}', fn (string $id, string $postId): string => "{$id}-{$postId}");
+
+    expect($router->dispatch('GET', '/users/42/posts/22'))->toBe('42-22');
+});
+
+it('reject a dynamic route when a static segment does not match', function () {
+    $router = new Router;
+
+    $router->add('GET', '/users/{id}', fn (string $id): string => $id);
+
+    $router->dispatch('GET', '/posts/43');
+})->throws(RouteNotFoundException::class);
