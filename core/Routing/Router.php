@@ -55,4 +55,29 @@ final class Router
 
         throw new RouteNotFoundException("Route {$method} {$path} not found.");
     }
+
+    public function get(string $path, callable $handler): void
+    {
+        $this->add('GET', $path, $handler);
+    }
+
+    public function post(string $path, callable $handler): void
+    {
+        $this->add('POST', $path, $handler);
+    }
+
+    public function put(string $path, callable $handler): void
+    {
+        $this->add('PUT', $path, $handler);
+    }
+
+    public function patch(string $path, callable $handler): void
+    {
+        $this->add('PATCH', $path, $handler);
+    }
+
+    public function delete(string $path, callable $handler): void
+    {
+        $this->add('DELETE', $path, $handler);
+    }
 }
