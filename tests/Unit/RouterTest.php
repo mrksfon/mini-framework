@@ -107,3 +107,39 @@ it('registers a DELETE route using the delete method', function () {
 
     expect($result)->toBe('test');
 });
+
+it('treats routes with and without a trailing slash as the same route', function () {
+    $router = new Router;
+
+    $router->get('/users', fn () => 'users');
+    $router->get('/users/', fn () => 'users with slash');
+
+    $resultWithoutSlash = $router->dispatch('GET', '/users');
+    $resultWithSlash = $router->dispatch('GET', '/users/');
+
+    expect($resultWithoutSlash)->toBe('users with slash');
+    expect($resultWithSlash)->toBe('users with slash');
+});
+
+it('treats routes with and without a leading slash as the same route', function () {
+    $router = new Router;
+
+    $router->get('users', fn () => 'users');
+    $router->get('/users', fn () => 'users with leading slash');
+
+    $resultWithoutLeadingSlash = $router->dispatch('GET', 'users');
+    $resultWithLeadingSlash = $router->dispatch('GET', '/users');
+
+    expect($resultWithoutLeadingSlash)->toBe('users with leading slash');
+    expect($resultWithLeadingSlash)->toBe('users with leading slash');
+});
+
+it('keeps the root path valid during normalization', function () {
+    $router = new Router;
+
+    $router->get('/', fn () => 'home');
+
+    $result = $router->dispatch('GET', '/');
+
+    expect($result)->toBe('home');
+});
