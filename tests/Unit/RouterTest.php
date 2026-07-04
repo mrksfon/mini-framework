@@ -143,3 +143,13 @@ it('keeps the root path valid during normalization', function () {
 
     expect($result)->toBe('home');
 });
+
+it('normalizes HTTP method casing during registration and dispatching', function () {
+    $router = new Router;
+
+    $router->add('get', '/test', fn () => 'test');
+
+    $result = $router->dispatch('GeT', '/test');
+
+    expect($result)->toBe('test');
+});
