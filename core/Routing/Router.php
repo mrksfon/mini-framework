@@ -13,11 +13,15 @@ final class Router
 
     public function add(string $method, string $path, callable $handler): void
     {
+        $path = $this->normalizePath($path);
+
         $this->routes[$method][$path] = $handler;
     }
 
     public function dispatch(string $method, string $path): mixed
     {
+        $path = $this->normalizePath($path);
+
         if (isset($this->routes[$method][$path])) {
             $handler = $this->routes[$method][$path];
 
@@ -79,5 +83,10 @@ final class Router
     public function delete(string $path, callable $handler): void
     {
         $this->add('DELETE', $path, $handler);
+    }
+
+    private function normalizePath(string $path): string
+    {
+        return '/'.trim($path, '/');
     }
 }
