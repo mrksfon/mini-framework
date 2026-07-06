@@ -7,7 +7,7 @@ use Rector\Config\RectorConfig;
 return RectorConfig::configure()
     ->withPaths([
         __DIR__.'/app',
-        __DIR__.'/core',
+        __DIR__.'/src',
         __DIR__.'/public',
         __DIR__.'/tests',
     ])
