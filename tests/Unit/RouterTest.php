@@ -221,3 +221,21 @@ it('throws method not allowed exception when a dynamic path exists for a differe
 
     $router->dispatch('GET', '/users/42');
 })->throws(MethodNotAllowedException::class);
+
+it('matches a dynamic route parameter only when it satisfies its constraint', function () {
+    $router = new Router;
+
+    $router->get('/users/{id:\d+}', fn (string $id): string => $id);
+
+    expect($router->dispatch('GET', '/users/42'))->toBe('42');
+    $router->dispatch('GET', '/users/abc');
+})->throws(RouteNotFoundException::class);
+
+it('does not throw method not allowed when a constrained dynamic path does not match another method', function () {
+    $router = new Router;
+
+    $router->post('/users/{id:\d+}', fn (string $id): string => $id);
+
+    $router->dispatch('GET', '/users/abc');
+
+})->throws(RouteNotFoundException::class);

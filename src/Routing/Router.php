@@ -47,6 +47,10 @@ final class Router
             foreach ($routeSegments as $index => $routeSegment) {
                 $isParameter = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, '}');
                 if ($isParameter) {
+                    if (! $this->routeParameterMatches($routeSegment, $pathSegments[$index])) {
+                        $matches = false;
+                        break;
+                    }
                     $parameters[] = $pathSegments[$index];
 
                     continue;
@@ -82,6 +86,12 @@ final class Router
                     $isParameter = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, '}');
 
                     if ($isParameter) {
+
+                        if (! $this->routeParameterMatches($routeSegment, $pathSegments[$index])) {
+                            $matches = false;
+                            break;
+                        }
+
                         continue;
                     }
 
@@ -151,5 +161,13 @@ final class Router
         }
 
         return strtoupper($method);
+    }
+
+    private function routeParameterMatches(string $routeSegment, string $pathSegment): bool
+    {
+        $parameterDefinition = trim($routeSegment, '{}');
+        [$_, $constraint] = array_pad(explode(':', $parameterDefinition, 2), 2, null);
+
+        return $constraint === null || preg_match("#^{$constraint}$#", $pathSegment) === 1;
     }
 }
