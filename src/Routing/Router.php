@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Framework\Routing;
 
+use InvalidArgumentException;
+
 final class Router
 {
     /**
@@ -91,11 +93,29 @@ final class Router
 
     private function normalizePath(string $path): string
     {
-        return '/'.trim($path, '/');
+        $path = '/'.trim($path, '/');
+        foreach (explode('/', trim($path, '/')) as $segment) {
+            if ($segment === '{}') {
+                throw new InvalidArgumentException('Route parameter cannot be empty');
+            }
+            if (str_starts_with($segment, '{') && ! str_ends_with($segment, '}')) {
+                throw new InvalidArgumentException('Route parameter must be closed');
+            }
+
+            if (! str_starts_with($segment, '{') && str_ends_with($segment, '}')) {
+                throw new InvalidArgumentException('Route parameter must be opened');
+            }
+        }
+
+        return $path;
     }
 
     private function normalizeMethod(string $method): string
     {
+        if (trim($method) === '') {
+            throw new InvalidArgumentException('HTTP method cannot be empty.');
+        }
+
         return strtoupper($method);
     }
 }
