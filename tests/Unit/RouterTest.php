@@ -164,3 +164,43 @@ it('later duplicate route registration replaces the earlier handler', function (
 
     expect($result)->toBe('second');
 });
+
+it('rejects an empty http method', function () {
+    $router = new Router;
+
+    $router->add('', '/users', fn () => 'users');
+})->throws(InvalidArgumentException::class);
+
+it('rejects a whitespace-only http method', function () {
+    $router = new Router;
+
+    $router->add(' ', '/users', fn () => 'users');
+})->throws(InvalidArgumentException::class);
+
+it('normalizes an empty path to the root path', function () {
+    $router = new Router;
+
+    $router->get('', fn () => 'home');
+
+    $result = $router->dispatch('GET', '');
+
+    expect($result)->toBe('home');
+});
+
+it('rejects an empty route parameter name', function () {
+    $router = new Router;
+
+    $router->get('/users/{}', fn () => 'users');
+})->throws(InvalidArgumentException::class);
+
+it('rejects an unclosed route parameter', function () {
+    $router = new Router;
+
+    $router->get('/users/{id', fn () => 'users');
+})->throws(InvalidArgumentException::class);
+
+it('rejects an unopened route parameter', function () {
+    $router = new Router;
+
+    $router->get('/users/id}', fn () => 'users');
+})->throws(InvalidArgumentException::class);
