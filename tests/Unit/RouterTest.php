@@ -153,3 +153,14 @@ it('normalizes HTTP method casing during registration and dispatching', function
 
     expect($result)->toBe('test');
 });
+
+it('later duplicate route registration replaces the earlier handler', function () {
+    $router = new Router;
+
+    $router->add('get', 'test/', fn () => 'first');
+    $router->add('GET', '/test', fn () => 'second');
+
+    $result = $router->dispatch('GET', '/test');
+
+    expect($result)->toBe('second');
+});
