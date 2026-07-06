@@ -63,6 +63,40 @@ final class Router
             }
         }
 
+        foreach ($this->routes as $registeredMethod => $routes) {
+            if ($registeredMethod === $method) {
+                continue;
+            }
+
+            foreach (array_keys($routes) as $routePath) {
+                $routeSegments = explode('/', trim($routePath, '/'));
+                $pathSegments = explode('/', trim($path, '/'));
+
+                if (count($routeSegments) !== count($pathSegments)) {
+                    continue;
+                }
+
+                $matches = true;
+
+                foreach ($routeSegments as $index => $routeSegment) {
+                    $isParameter = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, '}');
+
+                    if ($isParameter) {
+                        continue;
+                    }
+
+                    if ($routeSegment !== $pathSegments[$index]) {
+                        $matches = false;
+                        break;
+                    }
+                }
+
+                if ($matches) {
+                    throw new MethodNotAllowedException("Method {$method} not allowed for path {$path}.");
+                }
+            }
+        }
+
         throw new RouteNotFoundException("Route {$method} {$path} not found.");
     }
 

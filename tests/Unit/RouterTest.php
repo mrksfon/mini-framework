@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Framework\Routing\MethodNotAllowedException;
 use Framework\Routing\RouteNotFoundException;
 use Framework\Routing\Router;
 
@@ -204,3 +205,19 @@ it('rejects an unopened route parameter', function () {
 
     $router->get('/users/id}', fn () => 'users');
 })->throws(InvalidArgumentException::class);
+
+it('throws method not allowed exception when path exists for a different method', function () {
+    $router = new Router;
+
+    $router->post('/users', fn () => 'created');
+
+    $router->dispatch('GET', '/users');
+})->throws(MethodNotAllowedException::class);
+
+it('throws method not allowed exception when a dynamic path exists for a different method', function () {
+    $router = new Router;
+
+    $router->post('/users/{id}', fn (string $id): string => $id);
+
+    $router->dispatch('GET', '/users/42');
+})->throws(MethodNotAllowedException::class);
