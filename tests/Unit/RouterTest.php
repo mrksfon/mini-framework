@@ -239,3 +239,25 @@ it('does not throw method not allowed when a constrained dynamic path does not m
     $router->dispatch('GET', '/users/abc');
 
 })->throws(RouteNotFoundException::class);
+
+it('prioritizes a static route over a dynamic route registered first', function () {
+    $router = new Router;
+
+    $router->get('/users/{id}', fn () => 'dynamic');
+    $router->get('/users/create', fn () => 'static');
+
+    $result = $router->dispatch('GET', '/users/create');
+
+    expect($result)->toBe('static');
+});
+
+it('prioritizes a static route over a dynamic route registered second', function () {
+    $router = new Router;
+
+    $router->get('/users/create', fn () => 'static');
+    $router->get('/users/{id}', fn () => 'dynamic');
+
+    $result = $router->dispatch('GET', '/users/create');
+
+    expect($result)->toBe('static');
+});
