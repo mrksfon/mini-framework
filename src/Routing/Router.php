@@ -38,13 +38,23 @@ final class Router
             $routeSegments = explode('/', trim($routePath, '/'));
             $pathSegments = explode('/', trim($path, '/'));
 
-            if (count($routeSegments) !== count($pathSegments)) {
+            $lastRouteSegment = $routeSegments[array_key_last($routeSegments)];
+
+            $hasOmittedOptionalParameter = count($routeSegments) === count($pathSegments) + 1 && str_starts_with($lastRouteSegment, '{') && str_ends_with($lastRouteSegment, '?}');
+
+            if (count($routeSegments) !== count($pathSegments) && ! $hasOmittedOptionalParameter) {
                 continue;
             }
 
             $parameters = [];
             $matches = true;
             foreach ($routeSegments as $index => $routeSegment) {
+                if (! array_key_exists($index, $pathSegments)) {
+                    $parameters[] = null;
+
+                    continue;
+                }
+
                 $isParameter = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, '}');
                 if ($isParameter) {
                     if (! $this->routeParameterMatches($routeSegment, $pathSegments[$index])) {
@@ -76,13 +86,20 @@ final class Router
                 $routeSegments = explode('/', trim($routePath, '/'));
                 $pathSegments = explode('/', trim($path, '/'));
 
-                if (count($routeSegments) !== count($pathSegments)) {
+                $lastRouteSegment = $routeSegments[array_key_last($routeSegments)];
+
+                $hasOmittedOptionalParameter = count($routeSegments) === count($pathSegments) + 1 && str_starts_with($lastRouteSegment, '{') && str_ends_with($lastRouteSegment, '?}');
+
+                if (count($routeSegments) !== count($pathSegments) && ! $hasOmittedOptionalParameter) {
                     continue;
                 }
 
                 $matches = true;
 
                 foreach ($routeSegments as $index => $routeSegment) {
+                    if (! array_key_exists($index, $pathSegments)) {
+                        continue;
+                    }
                     $isParameter = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, '}');
 
                     if ($isParameter) {
@@ -138,7 +155,11 @@ final class Router
     private function normalizePath(string $path): string
     {
         $path = '/'.trim($path, '/');
-        foreach (explode('/', trim($path, '/')) as $segment) {
+        $segments = explode('/', trim($path, '/'));
+        foreach ($segments as $index => $segment) {
+            if (str_starts_with($segment, '{') && str_ends_with($segment, '?}') && $index !== array_key_last($segments)) {
+                throw new InvalidArgumentException('Optional route parameter must be the final segment');
+            }
             if ($segment === '{}') {
                 throw new InvalidArgumentException('Route parameter cannot be empty');
             }

@@ -261,3 +261,36 @@ it('prioritizes a static route over a dynamic route registered second', function
 
     expect($result)->toBe('static');
 });
+
+it('matches a route when its optional parameter is omitted', function () {
+    $router = new Router;
+
+    $router->get('/users/{id?}', fn (?string $id) => $id);
+    $result = $router->dispatch('GET', '/users');
+
+    expect($result)->toBeNull();
+});
+
+it('passes an optional parameter to the handler when it is present', function () {
+    $router = new Router;
+
+    $router->get('/users/{id?}', fn (?string $id): ?string => $id);
+
+    $result = $router->dispatch('GET', 'users/42');
+
+    expect($result)->toBe('42');
+});
+
+it('rejects an optional parameter that is not the final segment', function () {
+    $router = new Router;
+
+    $router->get('/users/{id?}/posts', fn (?string $id): ?string => $id);
+})->throws(InvalidArgumentException::class);
+
+it('throws method not allowed when an optional parameter is omitted for another method', function () {
+    $router = new Router;
+
+    $router->post('/users/{id?}', fn (?string $id): ?string => $id);
+
+    $router->dispatch('GET', '/users');
+})->throws(MethodNotAllowedException::class);
