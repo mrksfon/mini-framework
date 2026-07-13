@@ -42,7 +42,13 @@ final class Router
 
             $hasOmittedOptionalParameter = count($routeSegments) === count($pathSegments) + 1 && str_starts_with($lastRouteSegment, '{') && str_ends_with($lastRouteSegment, '?}');
 
-            if (count($routeSegments) !== count($pathSegments) && ! $hasOmittedOptionalParameter) {
+            $hasCatchAllWildcard = str_starts_with($lastRouteSegment, '{') && str_ends_with($lastRouteSegment, ':*}');
+
+            if ($hasCatchAllWildcard) {
+                if (count($pathSegments) < count($routeSegments)) {
+                    continue;
+                }
+            } elseif (count($routeSegments) !== count($pathSegments) && ! $hasOmittedOptionalParameter) {
                 continue;
             }
 
@@ -53,6 +59,13 @@ final class Router
                     $parameters[] = null;
 
                     continue;
+                }
+
+                $isCatchAllWildcard = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, ':*}');
+
+                if ($isCatchAllWildcard) {
+                    $parameters[] = implode('/', array_slice($pathSegments, $index));
+                    break;
                 }
 
                 $isParameter = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, '}');
@@ -90,7 +103,13 @@ final class Router
 
                 $hasOmittedOptionalParameter = count($routeSegments) === count($pathSegments) + 1 && str_starts_with($lastRouteSegment, '{') && str_ends_with($lastRouteSegment, '?}');
 
-                if (count($routeSegments) !== count($pathSegments) && ! $hasOmittedOptionalParameter) {
+                $hasCatchAllWildcard = str_starts_with($lastRouteSegment, '{') && str_ends_with($lastRouteSegment, ':*}');
+
+                if ($hasCatchAllWildcard) {
+                    if (count($pathSegments) < count($routeSegments)) {
+                        continue;
+                    }
+                } elseif (count($routeSegments) !== count($pathSegments) && ! $hasOmittedOptionalParameter) {
                     continue;
                 }
 
@@ -100,6 +119,12 @@ final class Router
                     if (! array_key_exists($index, $pathSegments)) {
                         continue;
                     }
+                    $isCatchAllWildcard = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, ':*}');
+
+                    if ($isCatchAllWildcard) {
+                        break;
+                    }
+
                     $isParameter = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, '}');
 
                     if ($isParameter) {
@@ -159,6 +184,9 @@ final class Router
         foreach ($segments as $index => $segment) {
             if (str_starts_with($segment, '{') && str_ends_with($segment, '?}') && $index !== array_key_last($segments)) {
                 throw new InvalidArgumentException('Optional route parameter must be the final segment');
+            }
+            if (str_starts_with($segment, '{') && str_ends_with($segment, ':*}') && $index !== array_key_last($segments)) {
+                throw new InvalidArgumentException('Catch-all wildcard route parameter must be the final segment');
             }
             if ($segment === '{}') {
                 throw new InvalidArgumentException('Route parameter cannot be empty');

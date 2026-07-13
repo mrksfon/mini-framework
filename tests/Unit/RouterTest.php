@@ -294,3 +294,27 @@ it('throws method not allowed when an optional parameter is omitted for another 
 
     $router->dispatch('GET', '/users');
 })->throws(MethodNotAllowedException::class);
+
+it('matches a catch-all wildcard parameter', function () {
+    $router = new Router;
+
+    $router->get('/files/{path:*}', fn (string $path): string => $path);
+
+    $result = $router->dispatch('GET', '/files/docs/readme.md');
+
+    expect($result)->toBe('docs/readme.md');
+});
+
+it('throws method not allowed when a catch-all wildcard matches another method', function () {
+    $router = new Router;
+
+    $router->post('/files/{path:*}', fn (string $path): string => $path);
+
+    $router->dispatch('GET', '/files/docs/readme.md');
+})->throws(MethodNotAllowedException::class);
+
+it('rejects a catch-all wildcard parameter that is not the final segment', function () {
+    $router = new Router;
+
+    $router->get('/files/{path:*}/edit', fn (string $path): string => $path);
+})->throws(InvalidArgumentException::class);
