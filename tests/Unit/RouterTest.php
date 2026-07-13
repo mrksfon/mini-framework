@@ -318,3 +318,39 @@ it('rejects a catch-all wildcard parameter that is not the final segment', funct
 
     $router->get('/files/{path:*}/edit', fn (string $path): string => $path);
 })->throws(InvalidArgumentException::class);
+
+it('passes dynamic route parameters to the handler by name', function () {
+    $router = new Router;
+
+    $router->get('/users/{id}/posts/{postId}', function (string $postId, string $id) {
+        return "{$id}-{$postId}";
+    });
+
+    $result = $router->dispatch('GET', '/users/42/posts/22');
+
+    expect($result)->toBe('42-22');
+});
+
+it('passes constrained route parameters to the handler by name', function () {
+    $router = new Router;
+
+    $router->get('/users/{id:\d+}/posts/{postId:\d+}', function (string $postId, string $id) {
+        return "{$id}-{$postId}";
+    });
+
+    $result = $router->dispatch('GET', '/users/42/posts/22');
+
+    expect($result)->toBe('42-22');
+});
+
+it('passes catch-all wildcard route parameters to the handler by name', function () {
+    $router = new Router;
+
+    $router->get('/tenants/{tenant}/files/{path:*}', function (string $path, string $tenant) {
+        return "{$tenant}:{$path}";
+    });
+
+    $result = $router->dispatch('GET', 'tenants/acme/files/docs/readme.md');
+
+    expect($result)->toBe('acme:docs/readme.md');
+});

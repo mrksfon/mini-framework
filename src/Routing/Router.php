@@ -56,7 +56,8 @@ final class Router
             $matches = true;
             foreach ($routeSegments as $index => $routeSegment) {
                 if (! array_key_exists($index, $pathSegments)) {
-                    $parameters[] = null;
+                    $parameterName = $this->routeParameterName($routeSegment);
+                    $parameters[$parameterName] = null;
 
                     continue;
                 }
@@ -64,7 +65,8 @@ final class Router
                 $isCatchAllWildcard = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, ':*}');
 
                 if ($isCatchAllWildcard) {
-                    $parameters[] = implode('/', array_slice($pathSegments, $index));
+                    $parameterName = $this->routeParameterName($routeSegment);
+                    $parameters[$parameterName] = implode('/', array_slice($pathSegments, $index));
                     break;
                 }
 
@@ -74,7 +76,8 @@ final class Router
                         $matches = false;
                         break;
                     }
-                    $parameters[] = $pathSegments[$index];
+                    $parameterName = $this->routeParameterName($routeSegment);
+                    $parameters[$parameterName] = $pathSegments[$index];
 
                     continue;
                 }
@@ -218,5 +221,12 @@ final class Router
         [$_, $constraint] = array_pad(explode(':', $parameterDefinition, 2), 2, null);
 
         return $constraint === null || preg_match("#^{$constraint}$#", $pathSegment) === 1;
+    }
+
+    private function routeParameterName(string $routeSegment): string
+    {
+        $parameterDefinition = trim($routeSegment, '{}');
+
+        return explode(':', rtrim($parameterDefinition, '?'), 2)[0];
     }
 }
