@@ -9,7 +9,7 @@ use InvalidArgumentException;
 final class Router
 {
     /**
-     * @var array<string, array<string, callable>>
+     * @var array<string, array<string, Route>>
      */
     private array $routes = [];
 
@@ -19,7 +19,7 @@ final class Router
 
         $path = $this->normalizePath($path);
 
-        $this->routes[$method][$path] = $handler;
+        $this->routes[$method][$path] = new Route($path, $handler);
     }
 
     public function dispatch(string $method, string $path): mixed
@@ -29,68 +29,19 @@ final class Router
         $path = $this->normalizePath($path);
 
         if (isset($this->routes[$method][$path])) {
-            $handler = $this->routes[$method][$path];
+            $route = $this->routes[$method][$path];
 
-            return $handler();
+            return $route->run([]);
         }
 
-        foreach ($this->routes[$method] ?? [] as $routePath => $handler) {
-            $routeSegments = explode('/', trim($routePath, '/'));
-            $pathSegments = explode('/', trim($path, '/'));
+        foreach ($this->routes[$method] ?? [] as $route) {
+            $parameters = $route->matches($path);
 
-            $lastRouteSegment = $routeSegments[array_key_last($routeSegments)];
-
-            $hasOmittedOptionalParameter = count($routeSegments) === count($pathSegments) + 1 && str_starts_with($lastRouteSegment, '{') && str_ends_with($lastRouteSegment, '?}');
-
-            $hasCatchAllWildcard = str_starts_with($lastRouteSegment, '{') && str_ends_with($lastRouteSegment, ':*}');
-
-            if ($hasCatchAllWildcard) {
-                if (count($pathSegments) < count($routeSegments)) {
-                    continue;
-                }
-            } elseif (count($routeSegments) !== count($pathSegments) && ! $hasOmittedOptionalParameter) {
+            if ($parameters === null) {
                 continue;
             }
 
-            $parameters = [];
-            $matches = true;
-            foreach ($routeSegments as $index => $routeSegment) {
-                if (! array_key_exists($index, $pathSegments)) {
-                    $parameterName = $this->routeParameterName($routeSegment);
-                    $parameters[$parameterName] = null;
-
-                    continue;
-                }
-
-                $isCatchAllWildcard = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, ':*}');
-
-                if ($isCatchAllWildcard) {
-                    $parameterName = $this->routeParameterName($routeSegment);
-                    $parameters[$parameterName] = implode('/', array_slice($pathSegments, $index));
-                    break;
-                }
-
-                $isParameter = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, '}');
-                if ($isParameter) {
-                    if (! $this->routeParameterMatches($routeSegment, $pathSegments[$index])) {
-                        $matches = false;
-                        break;
-                    }
-                    $parameterName = $this->routeParameterName($routeSegment);
-                    $parameters[$parameterName] = $pathSegments[$index];
-
-                    continue;
-                }
-
-                if ($routeSegment !== $pathSegments[$index]) {
-                    $matches = false;
-                    break;
-                }
-            }
-
-            if ($matches) {
-                return $handler(...$parameters);
-            }
+            return $route->run($parameters);
         }
 
         foreach ($this->routes as $registeredMethod => $routes) {
@@ -98,55 +49,8 @@ final class Router
                 continue;
             }
 
-            foreach (array_keys($routes) as $routePath) {
-                $routeSegments = explode('/', trim($routePath, '/'));
-                $pathSegments = explode('/', trim($path, '/'));
-
-                $lastRouteSegment = $routeSegments[array_key_last($routeSegments)];
-
-                $hasOmittedOptionalParameter = count($routeSegments) === count($pathSegments) + 1 && str_starts_with($lastRouteSegment, '{') && str_ends_with($lastRouteSegment, '?}');
-
-                $hasCatchAllWildcard = str_starts_with($lastRouteSegment, '{') && str_ends_with($lastRouteSegment, ':*}');
-
-                if ($hasCatchAllWildcard) {
-                    if (count($pathSegments) < count($routeSegments)) {
-                        continue;
-                    }
-                } elseif (count($routeSegments) !== count($pathSegments) && ! $hasOmittedOptionalParameter) {
-                    continue;
-                }
-
-                $matches = true;
-
-                foreach ($routeSegments as $index => $routeSegment) {
-                    if (! array_key_exists($index, $pathSegments)) {
-                        continue;
-                    }
-                    $isCatchAllWildcard = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, ':*}');
-
-                    if ($isCatchAllWildcard) {
-                        break;
-                    }
-
-                    $isParameter = str_starts_with($routeSegment, '{') && str_ends_with($routeSegment, '}');
-
-                    if ($isParameter) {
-
-                        if (! $this->routeParameterMatches($routeSegment, $pathSegments[$index])) {
-                            $matches = false;
-                            break;
-                        }
-
-                        continue;
-                    }
-
-                    if ($routeSegment !== $pathSegments[$index]) {
-                        $matches = false;
-                        break;
-                    }
-                }
-
-                if ($matches) {
+            foreach ($routes as $route) {
+                if ($route->matches($path) !== null) {
                     throw new MethodNotAllowedException("Method {$method} not allowed for path {$path}.");
                 }
             }
@@ -213,20 +117,5 @@ final class Router
         }
 
         return strtoupper($method);
-    }
-
-    private function routeParameterMatches(string $routeSegment, string $pathSegment): bool
-    {
-        $parameterDefinition = trim($routeSegment, '{}');
-        [$_, $constraint] = array_pad(explode(':', $parameterDefinition, 2), 2, null);
-
-        return $constraint === null || preg_match("#^{$constraint}$#", $pathSegment) === 1;
-    }
-
-    private function routeParameterName(string $routeSegment): string
-    {
-        $parameterDefinition = trim($routeSegment, '{}');
-
-        return explode(':', rtrim($parameterDefinition, '?'), 2)[0];
     }
 }

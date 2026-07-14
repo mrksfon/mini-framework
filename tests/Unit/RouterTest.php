@@ -322,9 +322,7 @@ it('rejects a catch-all wildcard parameter that is not the final segment', funct
 it('passes dynamic route parameters to the handler by name', function () {
     $router = new Router;
 
-    $router->get('/users/{id}/posts/{postId}', function (string $postId, string $id) {
-        return "{$id}-{$postId}";
-    });
+    $router->get('/users/{id}/posts/{postId}', fn (string $postId, string $id) => "{$id}-{$postId}");
 
     $result = $router->dispatch('GET', '/users/42/posts/22');
 
@@ -334,9 +332,7 @@ it('passes dynamic route parameters to the handler by name', function () {
 it('passes constrained route parameters to the handler by name', function () {
     $router = new Router;
 
-    $router->get('/users/{id:\d+}/posts/{postId:\d+}', function (string $postId, string $id) {
-        return "{$id}-{$postId}";
-    });
+    $router->get('/users/{id:\d+}/posts/{postId:\d+}', fn (string $postId, string $id) => "{$id}-{$postId}");
 
     $result = $router->dispatch('GET', '/users/42/posts/22');
 
@@ -346,9 +342,7 @@ it('passes constrained route parameters to the handler by name', function () {
 it('passes catch-all wildcard route parameters to the handler by name', function () {
     $router = new Router;
 
-    $router->get('/tenants/{tenant}/files/{path:*}', function (string $path, string $tenant) {
-        return "{$tenant}:{$path}";
-    });
+    $router->get('/tenants/{tenant}/files/{path:*}', fn (string $path, string $tenant) => "{$tenant}:{$path}");
 
     $result = $router->dispatch('GET', 'tenants/acme/files/docs/readme.md');
 
