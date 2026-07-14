@@ -28,6 +28,8 @@
         "lint": "pint --test",
         "analyse": "phpstan analyse --memory-limit=1G",
         "refactor": "rector process --dry-run",
+
+        "refactor:fix": "rector process",
         "check": [
             "@test",
             "@analyse",
