@@ -6,12 +6,14 @@ namespace Framework\Routing;
 
 use InvalidArgumentException;
 
-final class Router
+final readonly class Router
 {
-    /**
-     * @var array<string, array<string, Route>>
-     */
-    private array $routes = [];
+    private RouteCollection $routes;
+
+    public function __construct()
+    {
+        $this->routes = new RouteCollection;
+    }
 
     public function add(string $method, string $path, callable $handler): void
     {
@@ -19,7 +21,7 @@ final class Router
 
         $path = $this->normalizePath($path);
 
-        $this->routes[$method][$path] = new Route($path, $handler);
+        $this->routes->add($method, $path, new Route($path, $handler));
     }
 
     public function dispatch(string $method, string $path): mixed
@@ -28,32 +30,14 @@ final class Router
 
         $path = $this->normalizePath($path);
 
-        if (isset($this->routes[$method][$path])) {
-            $route = $this->routes[$method][$path];
+        $match = $this->routes->match($method, $path);
 
-            return $route->run([]);
+        if ($match !== null) {
+            return $match['route']->run($match['parameters']);
         }
 
-        foreach ($this->routes[$method] ?? [] as $route) {
-            $parameters = $route->matches($path);
-
-            if ($parameters === null) {
-                continue;
-            }
-
-            return $route->run($parameters);
-        }
-
-        foreach ($this->routes as $registeredMethod => $routes) {
-            if ($registeredMethod === $method) {
-                continue;
-            }
-
-            foreach ($routes as $route) {
-                if ($route->matches($path) !== null) {
-                    throw new MethodNotAllowedException("Method {$method} not allowed for path {$path}.");
-                }
-            }
+        if ($this->routes->matchesOtherMethod($method, $path)) {
+            throw new MethodNotAllowedException("Method {$method} not allowed for path {$path}.");
         }
 
         throw new RouteNotFoundException("Route {$method} {$path} not found.");
