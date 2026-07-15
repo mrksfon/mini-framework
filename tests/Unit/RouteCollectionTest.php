@@ -80,7 +80,7 @@ it('does not detect a different method when no route path matches', function () 
 
     $collection->add('POST', '/users/{id}', $route);
 
-    $matches = $collection->matchesOtherMethod('GET','/posts/42');
+    $matches = $collection->matchesOtherMethod('GET', '/posts/42');
 
     expect($matches)->toBeFalse();
 });
