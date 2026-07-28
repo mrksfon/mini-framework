@@ -15,6 +15,6 @@ final class Request
 
     public function path(): string
     {
-        return $this->path;
+        return '/'.trim($this->path, '/');
     }
 }
