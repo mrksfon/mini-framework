@@ -10,7 +10,7 @@ final class Request
 
     public function method(): string
     {
-        return $this->method;
+        return strtoupper($this->method);
     }
 
     public function path(): string
