@@ -21,3 +21,9 @@ it('stores the request path', function () {
 
     expect($request->path())->toBe('/users');
 });
+
+it('normalizes the http method casing', function () {
+    $request = new Request('get', '/users');
+
+    expect($request->method())->toBe('GET');
+});
