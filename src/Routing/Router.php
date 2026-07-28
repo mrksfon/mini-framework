@@ -15,13 +15,17 @@ final readonly class Router
         $this->routes = new RouteCollection;
     }
 
-    public function add(string $method, string $path, callable $handler): void
+    public function add(string $method, string $path, callable $handler): Route
     {
         $method = $this->normalizeMethod($method);
 
         $path = $this->normalizePath($path);
 
-        $this->routes->add($method, $path, new Route($path, $handler));
+        $route = new Route($path, $handler);
+
+        $this->routes->add($method, $path, $route);
+
+        return $route;
     }
 
     public function dispatch(string $method, string $path): mixed
@@ -43,29 +47,29 @@ final readonly class Router
         throw new RouteNotFoundException("Route {$method} {$path} not found.");
     }
 
-    public function get(string $path, callable $handler): void
+    public function get(string $path, callable $handler): Route
     {
-        $this->add('GET', $path, $handler);
+        return $this->add('GET', $path, $handler);
     }
 
-    public function post(string $path, callable $handler): void
+    public function post(string $path, callable $handler): Route
     {
-        $this->add('POST', $path, $handler);
+        return $this->add('POST', $path, $handler);
     }
 
-    public function put(string $path, callable $handler): void
+    public function put(string $path, callable $handler): Route
     {
-        $this->add('PUT', $path, $handler);
+        return $this->add('PUT', $path, $handler);
     }
 
-    public function patch(string $path, callable $handler): void
+    public function patch(string $path, callable $handler): Route
     {
-        $this->add('PATCH', $path, $handler);
+        return $this->add('PATCH', $path, $handler);
     }
 
-    public function delete(string $path, callable $handler): void
+    public function delete(string $path, callable $handler): Route
     {
-        $this->add('DELETE', $path, $handler);
+        return $this->add('DELETE', $path, $handler);
     }
 
     private function normalizePath(string $path): string
@@ -101,5 +105,10 @@ final readonly class Router
         }
 
         return strtoupper($method);
+    }
+
+    public function named(string $name): ?Route
+    {
+        return $this->routes->named($name);
     }
 }

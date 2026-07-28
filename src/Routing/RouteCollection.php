@@ -60,4 +60,17 @@ final class RouteCollection
 
         return false;
     }
+
+    public function named(string $name): ?Route
+    {
+        foreach ($this->routes as $routes) {
+            foreach ($routes as $route) {
+                if ($route->name() === $name) {
+                    return $route;
+                }
+            }
+        }
+
+        return null;
+    }
 }

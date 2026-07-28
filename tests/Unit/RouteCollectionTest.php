@@ -84,3 +84,14 @@ it('does not detect a different method when no route path matches', function () 
 
     expect($matches)->toBeFalse();
 });
+
+it('finds a route by name', function () {
+    $collection = new RouteCollection;
+
+    $route = new Route('/users', fn () => 'users');
+    $route->name('users.index');
+
+    $collection->add('GET', '/users', $route);
+
+    expect($collection->named('users.index'))->toBe($route);
+});
