@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Framework\Routing;
 
-final readonly class Route
+final class Route
 {
+    /**
+     * @var callable
+     */
     private mixed $handler;
+
+    private ?string $name = null;
 
     public function __construct(private string $path, callable $handler)
     {
@@ -116,5 +121,14 @@ final readonly class Route
     private function isWildcardParameter(string $segment): bool
     {
         return str_starts_with($segment, '{') && str_ends_with($segment, ':*}');
+    }
+
+    public function name(?string $name = null): ?string
+    {
+        if ($name !== null) {
+            $this->name = $name;
+        }
+
+        return $this->name;
     }
 }

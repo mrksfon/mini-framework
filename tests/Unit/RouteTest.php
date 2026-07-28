@@ -134,3 +134,11 @@ it('runs the route handler without parameters', function () {
 
     expect($result)->toBe('users');
 });
+
+it('stores a route name', function () {
+    $route = new Route('/users', fn () => 'users');
+
+    $route->name('users.index');
+
+    expect($route->name())->toBe('users.index');
+});

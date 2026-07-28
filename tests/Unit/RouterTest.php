@@ -348,3 +348,23 @@ it('passes catch-all wildcard route parameters to the handler by name', function
 
     expect($result)->toBe('acme:docs/readme.md');
 });
+
+it('allows a registered route to be named', function () {
+    $router = new Router;
+
+    $route = $router->get('/users', fn () => 'users');
+
+    $route->name('users.index');
+
+    expect($route->name())->toBe('users.index');
+});
+
+it('finds a route by name', function () {
+    $router = new Router;
+
+    $route = $router->get('/users', fn () => 'users');
+
+    $route->name('users.index');
+
+    expect($router->named('users.index'))->toBe($route);
+});
