@@ -42,7 +42,7 @@ Rector is optional and is not included in the default quality check.
 
 ## Roadmap
 
-- [ ] v0.1.0 — Router
+- [x] v0.1.0 — Router
 - [ ] v0.2.0 — Request, Response, and Controllers
 - [ ] v0.3.0 — Dependency Injection Container and Middleware
 - [ ] v0.4.0 — Service Providers, Configuration, and Environment
