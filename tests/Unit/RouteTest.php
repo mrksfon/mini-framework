@@ -142,3 +142,60 @@ it('stores a route name', function () {
 
     expect($route->name())->toBe('users.index');
 });
+
+it('generates a URL by replacing route parameters', function () {
+    $route = new Route('/users/{id}', fn () => 'users');
+
+    $url = $route->url(['id' => '42']);
+
+    expect($url)->toBe('/users/42');
+});
+
+it('generates a URL by replacing multiple route parameters', function () {
+    $route = new Route('/users/{userId}/posts/{postId}', fn () => 'users');
+
+    $url = $route->url([
+        'userId' => '42',
+        'postId' => '7',
+    ]);
+
+    expect($url)->toBe('/users/42/posts/7');
+});
+
+it('generates a URL for a constrained route parameter', function () {
+    $route = new Route('/users/{id:\d+}', fn () => 'users');
+
+    $url = $route->url(['id' => '42']);
+
+    expect($url)->toBe('/users/42');
+});
+
+it('throws an exception when a required URL parameter is missing', function () {
+    $route = new Route('/users/{id}', fn () => 'users');
+
+    $route->url([]);
+})->throws(InvalidArgumentException::class);
+
+it('generates a URL for an optional route parameter when the value is present', function () {
+    $route = new Route('/users/{id?}', fn () => 'users');
+
+    $url = $route->url(['id' => '42']);
+
+    expect($url)->toBe('/users/42');
+});
+
+it('generates a URL for an optional parameter when the value is omitted', function () {
+    $route = new Route('/users/{id?}', fn () => 'users');
+
+    $url = $route->url();
+
+    expect($url)->toBe('/users');
+});
+
+it('generates a URL for a catch-all wildcard parameter', function () {
+    $route = new Route('/files/{path:*}', fn () => 'files');
+
+    $url = $route->url(['path' => 'docs/readme.md']);
+
+    expect($url)->toBe('/files/docs/readme.md');
+});

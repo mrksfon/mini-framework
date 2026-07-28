@@ -368,3 +368,29 @@ it('finds a route by name', function () {
 
     expect($router->named('users.index'))->toBe($route);
 });
+
+it('generates a URL for a named route with parameters', function () {
+    $router = new Router;
+
+    $router->get('/users/{id}', fn () => 'users')->name('users.show');
+
+    $url = $router->url('users.show', ['id' => '42']);
+
+    expect($url)->toBe('/users/42');
+});
+
+it('throws an exception when generating a URL for an unknown route name', function () {
+    $router = new Router;
+
+    $router->url('users.show');
+})->throws(RouteNotFoundException::class);
+
+it('generates a URL for a named route with an omitted optional parameter', function () {
+    $router = new Router;
+
+    $router->get('/users/{id?}', fn () => 'users')->name('users.index');
+
+    $url = $router->url('users.index');
+
+    expect($url)->toBe('/users');
+});
