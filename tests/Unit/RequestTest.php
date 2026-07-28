@@ -27,3 +27,15 @@ it('normalizes the http method casing', function () {
 
     expect($request->method())->toBe('GET');
 });
+
+it('normalizes request path slashes', function () {
+    $request = new Request('GET', 'users/');
+
+    expect($request->path())->toBe('/users');
+});
+
+it('keeps the root request path valid after normalization', function () {
+    $request = new Request('GET', '/');
+
+    expect($request->path())->toBe('/');
+});
