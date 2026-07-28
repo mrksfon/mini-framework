@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Framework\Routing;
 
+use InvalidArgumentException;
+
 final class Route
 {
     /**
@@ -130,5 +132,41 @@ final class Route
         }
 
         return $this->name;
+    }
+
+    /**
+     * @param  array<string,string>  $parameters
+     */
+    public function url(array $parameters = []): string
+    {
+        $urlSegments = [];
+
+        foreach (explode('/', trim($this->path, '/')) as $routeSegment) {
+            if ($this->isParameter($routeSegment)) {
+                $parameterDefinition = trim($routeSegment, '{}');
+
+                [$parameterName] = explode(':', $parameterDefinition, 2);
+
+                $isOptional = $this->isOptional($parameterName);
+
+                $parameterName = rtrim($parameterName, '?');
+
+                if (! array_key_exists($parameterName, $parameters)) {
+                    if ($isOptional) {
+                        continue;
+                    }
+
+                    throw new InvalidArgumentException("Missing URL parameter {$parameterName}");
+                }
+
+                $urlSegments[] = $parameters[$parameterName];
+
+                continue;
+            }
+
+            $urlSegments[] = $routeSegment;
+        }
+
+        return '/'.implode('/', $urlSegments);
     }
 }

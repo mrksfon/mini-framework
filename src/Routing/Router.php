@@ -111,4 +111,18 @@ final readonly class Router
     {
         return $this->routes->named($name);
     }
+
+    /**
+     * @param  array<string,string>  $parameters
+     */
+    public function url(string $name, array $parameters = []): string
+    {
+        $route = $this->routes->named($name);
+
+        if ($route === null) {
+            throw new RouteNotFoundException("Named route {$name} not found.");
+        }
+
+        return $route->url($parameters);
+    }
 }
