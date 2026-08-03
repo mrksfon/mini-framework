@@ -15,3 +15,15 @@ it('stores response content', function () {
 
     expect($response->content())->toBe('hello world');
 });
+
+it('stores response status code', function () {
+    $response = new Response('hello world', 201);
+
+    expect($response->statusCode())->toBe(201);
+});
+
+it('defaults response status code to 200', function () {
+    $response = new Response;
+
+    expect($response->statusCode())->toBe(200);
+});
