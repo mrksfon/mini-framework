@@ -9,3 +9,9 @@ it('can be created', function () {
 
     expect($response)->toBeInstanceOf(Response::class);
 });
+
+it('stores response content', function () {
+    $response = new Response('hello world');
+
+    expect($response->content())->toBe('hello world');
+});
