@@ -28,4 +28,11 @@ final class Response
     {
         return $this->headers;
     }
+
+    public function withHeader(string $name, string $value): self
+    {
+        $this->headers[$name] = $value;
+
+        return $this;
+    }
 }

@@ -39,3 +39,12 @@ it('defaults response headers to an empty array', function () {
 
     expect($response->headers())->toBe([]);
 });
+
+it('can fluently set a response header', function () {
+    $response = new Response;
+
+    $result = $response->withHeader('Content-Type', 'text/plain');
+
+    expect($result)->toBe($response)->and($response->headers())->toBe(['Content-Type' => 'text/plain']);
+
+});
