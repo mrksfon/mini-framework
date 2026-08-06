@@ -3,18 +3,23 @@
 declare(strict_types=1);
 
 use Framework\Http\Request;
+use Framework\Http\Response;
 use Framework\Routing\MethodNotAllowedException;
 use Framework\Routing\RouteNotFoundException;
 use Framework\Routing\Router;
 
 it('registers and dispatches a static route', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->add('GET', '/test', fn () => 'users');
+    $router->add('GET', '/test', function () use (&$capturedResult) {
+        $capturedResult = 'users';
+    });
 
-    $result = $router->dispatch('GET', '/test');
+    $response = $router->dispatch('GET', '/test');
 
-    expect($result)->toBe('users');
+    expect($capturedResult)->toBe('users');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('throws an exception when no route matches', function () {
@@ -25,31 +30,53 @@ it('throws an exception when no route matches', function () {
 
 it('distinguishes routes by HTTP method', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->add('GET', '/test', fn () => 'users');
-    $router->add('POST', '/test', fn () => 'posts');
+    $router->add('GET', '/test', function () use (&$capturedResult) {
+        $capturedResult = 'users';
+    });
+    $router->add('POST', '/test', function () use (&$capturedResult) {
+        $capturedResult = 'posts';
+    });
 
-    $getResult = $router->dispatch('GET', '/test');
-    $postResult = $router->dispatch('POST', '/test');
+    $getResponse = $router->dispatch('GET', '/test');
 
-    expect($getResult)->toBe('users');
-    expect($postResult)->toBe('posts');
+    expect($capturedResult)->toBe('users');
+    expect($getResponse)->toBeInstanceOf(Response::class);
+
+    $capturedResult = null;
+    $postResponse = $router->dispatch('POST', '/test');
+
+    expect($capturedResult)->toBe('posts');
+    expect($postResponse)->toBeInstanceOf(Response::class);
 });
 
 it('matches a dynamic route parameter and passes it to the handler', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->add('GET', '/users/{id}', fn (string $id): string => $id);
+    $router->add('GET', '/users/{id}', function (string $id) use (&$capturedResult) {
+        $capturedResult = $id;
+    });
 
-    expect($router->dispatch('GET', '/users/42'))->toBe('42');
+    $response = $router->dispatch('GET', '/users/42');
+
+    expect($capturedResult)->toBe('42');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('matches multiple dynamic route parameters and passed them to the handler', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->add('GET', '/users/{id}/posts/{postId}', fn (string $id, string $postId): string => "{$id}-{$postId}");
+    $router->add('GET', '/users/{id}/posts/{postId}', function (string $id, string $postId) use (&$capturedResult) {
+        $capturedResult = "{$id}-{$postId}";
+    });
 
-    expect($router->dispatch('GET', '/users/42/posts/22'))->toBe('42-22');
+    $response = $router->dispatch('GET', '/users/42/posts/22');
+
+    expect($capturedResult)->toBe('42-22');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('reject a dynamic route when a static segment does not match', function () {
@@ -62,109 +89,166 @@ it('reject a dynamic route when a static segment does not match', function () {
 
 it('registers a GET route using the get method', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->get('/test', fn () => 'test');
+    $router->get('/test', function () use (&$capturedResult) {
+        $capturedResult = 'test';
+    });
 
-    $result = $router->dispatch('GET', '/test');
+    $response = $router->dispatch('GET', '/test');
 
-    expect($result)->toBe('test');
+    expect($capturedResult)->toBe('test');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('registers a POST route using the post method', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->post('/test', fn () => 'test');
+    $router->post('/test', function () use (&$capturedResult) {
+        $capturedResult = 'test';
+    });
 
-    $result = $router->dispatch('POST', '/test');
+    $response = $router->dispatch('POST', '/test');
 
-    expect($result)->toBe('test');
+    expect($capturedResult)->toBe('test');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('registers a PUT route using the put method', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->put('/test', fn () => 'test');
+    $router->put('/test', function () use (&$capturedResult) {
+        $capturedResult = 'test';
+    });
 
-    $result = $router->dispatch('PUT', '/test');
+    $response = $router->dispatch('PUT', '/test');
 
-    expect($result)->toBe('test');
+    expect($capturedResult)->toBe('test');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('registers a PATCH route using the patch method', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->patch('/test', fn () => 'test');
+    $router->patch('/test', function () use (&$capturedResult) {
+        $capturedResult = 'test';
+    });
 
-    $result = $router->dispatch('PATCH', '/test');
+    $response = $router->dispatch('PATCH', '/test');
 
-    expect($result)->toBe('test');
+    expect($capturedResult)->toBe('test');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('registers a DELETE route using the delete method', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->delete('/test', fn () => 'test');
+    $router->delete('/test', function () use (&$capturedResult) {
+        $capturedResult = 'test';
+    });
 
-    $result = $router->dispatch('DELETE', '/test');
+    $response = $router->dispatch('DELETE', '/test');
 
-    expect($result)->toBe('test');
+    expect($capturedResult)->toBe('test');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('treats routes with and without a trailing slash as the same route', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->get('/users', fn () => 'users');
-    $router->get('/users/', fn () => 'users with slash');
+    $router->get('/users', function () use (&$capturedResult) {
+        $capturedResult = 'users';
+    });
 
-    $resultWithoutSlash = $router->dispatch('GET', '/users');
-    $resultWithSlash = $router->dispatch('GET', '/users/');
+    $router->get('/users/', function () use (&$capturedResult) {
+        $capturedResult = 'users with slash';
+    });
 
-    expect($resultWithoutSlash)->toBe('users with slash');
-    expect($resultWithSlash)->toBe('users with slash');
+    $responseWithoutSlash = $router->dispatch('GET', '/users');
+
+    expect($capturedResult)->toBe('users with slash');
+    expect($responseWithoutSlash)->toBeInstanceOf(Response::class);
+
+    $capturedResult = null;
+
+    $responseWithSlash = $router->dispatch('GET', '/users/');
+
+    expect($capturedResult)->toBe('users with slash');
+    expect($responseWithSlash)->toBeInstanceOf(Response::class);
 });
 
 it('treats routes with and without a leading slash as the same route', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->get('users', fn () => 'users');
-    $router->get('/users', fn () => 'users with leading slash');
+    $router->get('users', function () use (&$capturedResult) {
+        $capturedResult = 'users';
+    });
 
-    $resultWithoutLeadingSlash = $router->dispatch('GET', 'users');
-    $resultWithLeadingSlash = $router->dispatch('GET', '/users');
+    $router->get('/users', function () use (&$capturedResult) {
+        $capturedResult = 'users with leading slash';
+    });
 
-    expect($resultWithoutLeadingSlash)->toBe('users with leading slash');
-    expect($resultWithLeadingSlash)->toBe('users with leading slash');
+    $responseWithoutLeadingSlash = $router->dispatch('GET', 'users');
+    expect($capturedResult)->toBe('users with leading slash');
+    expect($responseWithoutLeadingSlash)->toBeInstanceOf(Response::class);
+
+    $capturedResult = null;
+
+    $responseWithLeadingSlash = $router->dispatch('GET', '/users');
+
+    expect($capturedResult)->toBe('users with leading slash');
+    expect($responseWithLeadingSlash)->toBeInstanceOf(Response::class);
 });
 
 it('keeps the root path valid during normalization', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->get('/', fn () => 'home');
+    $router->get('/', function () use (&$capturedResult) {
+        $capturedResult = 'home';
+    });
 
-    $result = $router->dispatch('GET', '/');
+    $response = $router->dispatch('GET', '/');
 
-    expect($result)->toBe('home');
+    expect($capturedResult)->toBe('home');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('normalizes HTTP method casing during registration and dispatching', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->add('get', '/test', fn () => 'test');
+    $router->add('get', '/test', function () use (&$capturedResult) {
+        $capturedResult = 'test';
+    });
 
-    $result = $router->dispatch('GeT', '/test');
+    $response = $router->dispatch('GeT', '/test');
 
-    expect($result)->toBe('test');
+    expect($capturedResult)->toBe('test');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('later duplicate route registration replaces the earlier handler', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->add('get', 'test/', fn () => 'first');
-    $router->add('GET', '/test', fn () => 'second');
+    $router->add('get', 'test/', function () use (&$capturedResult) {
+        $capturedResult = 'first';
+    });
+    $router->add('get', 'test/', function () use (&$capturedResult) {
+        $capturedResult = 'second';
+    });
 
-    $result = $router->dispatch('GET', '/test');
+    $response = $router->dispatch('GET', '/test');
 
-    expect($result)->toBe('second');
+    expect($capturedResult)->toBe('second');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('rejects an empty http method', function () {
@@ -181,12 +265,17 @@ it('rejects a whitespace-only http method', function () {
 
 it('normalizes an empty path to the root path', function () {
     $router = new Router;
+    $capturedResult = null;
 
     $router->get('', fn () => 'home');
+    $router->get('', function () use (&$capturedResult) {
+        $capturedResult = 'home';
+    });
 
-    $result = $router->dispatch('GET', '');
+    $response = $router->dispatch('GET', '');
 
-    expect($result)->toBe('home');
+    expect($capturedResult)->toBe('home');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('rejects an empty route parameter name', function () {
@@ -225,11 +314,19 @@ it('throws method not allowed exception when a dynamic path exists for a differe
 
 it('matches a dynamic route parameter only when it satisfies its constraint', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->get('/users/{id:\d+}', fn (string $id): string => $id);
+    $router->get('/users/{id:\d+}', function (string $id) use (&$capturedResult) {
+        $capturedResult = $id;
+    });
 
-    expect($router->dispatch('GET', '/users/42'))->toBe('42');
+    $response = $router->dispatch('GET', '/users/42');
+
+    expect($capturedResult)->toBe('42');
+    expect($response)->toBeInstanceOf(Response::class);
+
     $router->dispatch('GET', '/users/abc');
+
 })->throws(RouteNotFoundException::class);
 
 it('does not throw method not allowed when a constrained dynamic path does not match another method', function () {
@@ -243,43 +340,63 @@ it('does not throw method not allowed when a constrained dynamic path does not m
 
 it('prioritizes a static route over a dynamic route registered first', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->get('/users/{id}', fn () => 'dynamic');
-    $router->get('/users/create', fn () => 'static');
+    $router->get('/users/{id}', function () use (&$capturedResult) {
+        $capturedResult = 'dynamic';
+    });
+    $router->get('/users/create', function () use (&$capturedResult) {
+        $capturedResult = 'static';
+    });
 
-    $result = $router->dispatch('GET', '/users/create');
+    $response = $router->dispatch('GET', '/users/create');
 
-    expect($result)->toBe('static');
+    expect($capturedResult)->toBe('static');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('prioritizes a static route over a dynamic route registered second', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->get('/users/create', fn () => 'static');
-    $router->get('/users/{id}', fn () => 'dynamic');
+    $router->get('/users/create', function () use (&$capturedResult) {
+        $capturedResult = 'static';
+    });
+    $router->get('/users/{id}', function () use (&$capturedResult) {
+        $capturedResult = 'dynamic';
+    });
 
-    $result = $router->dispatch('GET', '/users/create');
+    $response = $router->dispatch('GET', '/users/create');
 
-    expect($result)->toBe('static');
+    expect($capturedResult)->toBe('static');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('matches a route when its optional parameter is omitted', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->get('/users/{id?}', fn (?string $id) => $id);
-    $result = $router->dispatch('GET', '/users');
+    $router->get('/users/{id?}', function (?string $id) use (&$capturedResult) {
+        $capturedResult = $id;
+    });
+    $response = $router->dispatch('GET', '/users');
 
-    expect($result)->toBeNull();
+    expect($capturedResult)->toBeNull();
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('passes an optional parameter to the handler when it is present', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->get('/users/{id?}', fn (?string $id): ?string => $id);
+    $router->get('/users/{id?}', function (?string $id) use (&$capturedResult) {
+        $capturedResult = $id;
+    });
 
-    $result = $router->dispatch('GET', 'users/42');
+    $response = $router->dispatch('GET', 'users/42');
 
-    expect($result)->toBe('42');
+    expect($capturedResult)->toBe('42');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('rejects an optional parameter that is not the final segment', function () {
@@ -298,12 +415,15 @@ it('throws method not allowed when an optional parameter is omitted for another 
 
 it('matches a catch-all wildcard parameter', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->get('/files/{path:*}', fn (string $path): string => $path);
+    $router->get('/files/{path:*}', function (string $path) use (&$capturedResult) {
+        $capturedResult = $path;
+    });
 
-    $result = $router->dispatch('GET', '/files/docs/readme.md');
-
-    expect($result)->toBe('docs/readme.md');
+    $response = $router->dispatch('GET', '/files/docs/readme.md');
+    expect($capturedResult)->toBe('docs/readme.md');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('throws method not allowed when a catch-all wildcard matches another method', function () {
@@ -322,32 +442,46 @@ it('rejects a catch-all wildcard parameter that is not the final segment', funct
 
 it('passes dynamic route parameters to the handler by name', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->get('/users/{id}/posts/{postId}', fn (string $postId, string $id) => "{$id}-{$postId}");
+    $router->get('/users/{id}/posts/{postId}', function (string $postId, string $id) use (&$capturedResult) {
+        $capturedResult = "{$id}-{$postId}";
+    });
 
-    $result = $router->dispatch('GET', '/users/42/posts/22');
+    $response = $router->dispatch('GET', '/users/42/posts/22');
 
-    expect($result)->toBe('42-22');
+    expect($capturedResult)->toBe('42-22');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('passes constrained route parameters to the handler by name', function () {
     $router = new Router;
+    $capturedResult = null;
 
-    $router->get('/users/{id:\d+}/posts/{postId:\d+}', fn (string $postId, string $id) => "{$id}-{$postId}");
+    $router->get('/users/{id:\d+}/posts/{postId:\d+}', function (string $postId, string $id) use (&$capturedResult) {
+        $capturedResult = "{$id}-{$postId}";
+    });
 
-    $result = $router->dispatch('GET', '/users/42/posts/22');
+    $response = $router->dispatch('GET', '/users/42/posts/22');
 
-    expect($result)->toBe('42-22');
+    expect($capturedResult)->toBe('42-22');
+    expect($response)->toBeInstanceOf(Response::class);
+
 });
 
 it('passes catch-all wildcard route parameters to the handler by name', function () {
     $router = new Router;
 
-    $router->get('/tenants/{tenant}/files/{path:*}', fn (string $path, string $tenant) => "{$tenant}:{$path}");
+    $capturedResult = null;
 
-    $result = $router->dispatch('GET', 'tenants/acme/files/docs/readme.md');
+    $router->get('/tenants/{tenant}/files/{path:*}', function (string $path, string $tenant) use (&$capturedResult) {
+        $capturedResult = "{$tenant}:{$path}";
+    });
 
-    expect($result)->toBe('acme:docs/readme.md');
+    $response = $router->dispatch('GET', 'tenants/acme/files/docs/readme.md');
+
+    expect($capturedResult)->toBe('acme:docs/readme.md');
+    expect($response)->toBeInstanceOf(Response::class);
 });
 
 it('allows a registered route to be named', function () {
@@ -399,9 +533,26 @@ it('generates a URL for a named route with an omitted optional parameter', funct
 it('dispatches using a request object', function () {
     $router = new Router;
 
-    $router->get('/users', fn () => 'users');
+    $handled = false;
+
+    $router->get('/users', function () use (&$handled) {
+        $handled = true;
+    });
 
     $request = new Request('GET', '/users');
 
-    expect($router->dispatchRequest($request))->toBe('users');
+    $response = $router->dispatchRequest($request);
+
+    expect($handled)->toBeTrue();
+    expect($response)->toBeInstanceOf(Response::class);
+});
+
+it('returns a response object from dispatch', function () {
+    $router = new Router;
+
+    $router->get('/test', fn () => 'hello');
+
+    $response = $router->dispatch('GET', '/test');
+
+    expect($response)->toBeInstanceOf(Response::class);
 });
