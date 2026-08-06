@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Framework\Http\Request;
 use Framework\Routing\MethodNotAllowedException;
 use Framework\Routing\RouteNotFoundException;
 use Framework\Routing\Router;
@@ -393,4 +394,14 @@ it('generates a URL for a named route with an omitted optional parameter', funct
     $url = $router->url('users.index');
 
     expect($url)->toBe('/users');
+});
+
+it('dispatches using a request object', function () {
+    $router = new Router;
+
+    $router->get('/users', fn () => 'users');
+
+    $request = new Request('GET', '/users');
+
+    expect($router->dispatchRequest($request))->toBe('users');
 });

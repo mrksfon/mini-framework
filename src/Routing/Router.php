@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Framework\Routing;
 
+use Framework\Http\Request;
 use InvalidArgumentException;
 
 final readonly class Router
@@ -124,5 +125,10 @@ final readonly class Router
         }
 
         return $route->url($parameters);
+    }
+
+    public function dispatchRequest(Request $request): mixed
+    {
+        return $this->dispatch($request->method(), $request->path());
     }
 }
