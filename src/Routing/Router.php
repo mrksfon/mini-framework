@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Framework\Routing;
 
 use Framework\Http\Request;
+use Framework\Http\Response;
 use InvalidArgumentException;
 
 final readonly class Router
@@ -29,7 +30,7 @@ final readonly class Router
         return $route;
     }
 
-    public function dispatch(string $method, string $path): mixed
+    public function dispatch(string $method, string $path): Response
     {
         $method = $this->normalizeMethod($method);
 
@@ -38,7 +39,9 @@ final readonly class Router
         $match = $this->routes->match($method, $path);
 
         if ($match !== null) {
-            return $match['route']->run($match['parameters']);
+            $match['route']->run($match['parameters']);
+
+            return new Response;
         }
 
         if ($this->routes->matchesOtherMethod($method, $path)) {
@@ -127,7 +130,7 @@ final readonly class Router
         return $route->url($parameters);
     }
 
-    public function dispatchRequest(Request $request): mixed
+    public function dispatchRequest(Request $request): Response
     {
         return $this->dispatch($request->method(), $request->path());
     }
