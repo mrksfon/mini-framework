@@ -27,3 +27,15 @@ it('defaults response status code to 200', function () {
 
     expect($response->statusCode())->toBe(200);
 });
+
+it('stores response headers', function () {
+    $response = new Response('hello world', 200, ['Content-Type' => 'text/plain']);
+
+    expect($response->headers())->toBe(['Content-Type' => 'text/plain']);
+});
+
+it('defaults response headers to an empty array', function () {
+    $response = new Response;
+
+    expect($response->headers())->toBe([]);
+});
