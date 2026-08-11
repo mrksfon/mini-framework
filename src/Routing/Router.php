@@ -39,7 +39,11 @@ final readonly class Router
         $match = $this->routes->match($method, $path);
 
         if ($match !== null) {
-            $match['route']->run($match['parameters']);
+            $result = $match['route']->run($match['parameters']);
+
+            if (is_string($result)) {
+                return new Response($result);
+            }
 
             return new Response;
         }
