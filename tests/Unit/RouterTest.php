@@ -556,3 +556,15 @@ it('returns a response object from dispatch', function () {
 
     expect($response)->toBeInstanceOf(Response::class);
 });
+
+it('converts string handler results into a response object', function () {
+    $router = new Router;
+
+    $router->get('/test', fn () => 'hello world');
+
+    $response = $router->dispatch('GET', '/test');
+
+    expect($response)->toBeInstanceOf(Response::class);
+    expect($response->content())->toBe('hello world');
+    expect($response->statusCode())->toBe(200);
+});
