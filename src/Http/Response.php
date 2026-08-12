@@ -35,4 +35,24 @@ final class Response
 
         return $this;
     }
+
+    public static function ok(string $content = ''): self
+    {
+        return new self($content, 200);
+    }
+
+    public static function notFound(string $content = ''): self
+    {
+        return new self($content, 404);
+    }
+
+    public static function created(string $content = ''): self
+    {
+        return new self($content, 201);
+    }
+
+    public static function noContent(): self
+    {
+        return new self('', 204);
+    }
 }
