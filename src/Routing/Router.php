@@ -41,6 +41,10 @@ final readonly class Router
         if ($match !== null) {
             $result = $match['route']->run($match['parameters']);
 
+            if ($result instanceof Response) {
+                return $result;
+            }
+
             if (is_string($result)) {
                 return new Response($result);
             }

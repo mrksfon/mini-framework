@@ -568,3 +568,18 @@ it('converts string handler results into a response object', function () {
     expect($response->content())->toBe('hello world');
     expect($response->statusCode())->toBe(200);
 });
+
+it('preserves response handler resulsts', function () {
+    $router = new Router;
+
+    $expectedResponse = new Response('created', 201, ['Location' => '/users/1']);
+
+    $router->post('/users', fn () => $expectedResponse);
+
+    $response = $router->dispatch('POST', '/users');
+
+    expect($response)->toBe($expectedResponse);
+    expect($response->content())->toBe('created');
+    expect($response->statusCode())->toBe(201);
+    expect($response->headers())->toBe(['Location' => '/users/1']);
+});
