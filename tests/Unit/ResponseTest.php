@@ -46,5 +46,36 @@ it('can fluently set a response header', function () {
     $result = $response->withHeader('Content-Type', 'text/plain');
 
     expect($result)->toBe($response)->and($response->headers())->toBe(['Content-Type' => 'text/plain']);
+});
 
+it('creates an ok response', function () {
+    $response = Response::ok('hello world');
+
+    expect($response)->toBeInstanceOf(Response::class);
+    expect($response->content())->toBe('hello world');
+    expect($response->statusCode())->toBe(200);
+});
+
+it('creates a not found response', function () {
+    $response = Response::notFound('Missing');
+
+    expect($response)->toBeInstanceOf(Response::class);
+    expect($response->content())->toBe('Missing');
+    expect($response->statusCode())->toBe(404);
+});
+
+it('creates a created response', function () {
+    $response = Response::created('Created');
+
+    expect($response)->toBeInstanceOf(Response::class);
+    expect($response->content())->toBe('Created');
+    expect($response->statusCode())->toBe(201);
+});
+
+it('creates a no content response', function () {
+    $response = Response::noContent();
+
+    expect($response)->toBeInstanceOf(Response::class);
+    expect($response->content())->toBe('');
+    expect($response->statusCode())->toBe(204);
 });
